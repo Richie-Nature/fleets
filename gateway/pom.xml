@@ -15,7 +15,7 @@
 	<description>Gateway client to proxy api calls to eureka clients</description>
 	<properties>
 		<java.version>11</java.version>
-		<spring-cloud.version>2021.0.0</spring-cloud.version>
+		<spring-cloud.version>Greenwich.SR5</spring-cloud.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -55,6 +55,7 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>${project.parent.version}</version>
 			</plugin>
 		</plugins>
 	</build>

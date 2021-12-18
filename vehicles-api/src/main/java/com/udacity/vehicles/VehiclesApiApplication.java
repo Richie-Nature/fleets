@@ -32,10 +32,11 @@ import java.util.List;
 public class VehiclesApiApplication implements CommandLineRunner {
 
     @Autowired
-    private PriceClient priceClient;
+    private EurekaClient eurekaClient;
 
     @Autowired
-    private EurekaClient eurekaClient;
+    private PriceClient priceClient;
+
 
     public static void main(String[] args) {
         SpringApplication.run(VehiclesApiApplication.class, args);

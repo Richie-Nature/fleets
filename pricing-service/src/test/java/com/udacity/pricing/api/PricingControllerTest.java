@@ -3,7 +3,6 @@ package com.udacity.pricing.api;
 import com.udacity.pricing.domain.price.Price;
 import com.udacity.pricing.service.PricingService;
 import org.junit.Test;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
