@@ -4,9 +4,9 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -78,7 +78,7 @@ public class CarControllerTest {
     @Test
     public void createCar() throws Exception {
         Car car = getCar();
-        mvc.perform(
+        this.mvc.perform(
                 post(new URI("/cars"))
                         .content(json.write(car).getJson())
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
@@ -92,16 +92,19 @@ public class CarControllerTest {
      */
     @Test
     public void listCars() throws Exception {
-       Car car = getCar();
+
         this.mvc.perform(
                 get(new URI("/cars"))
-                        .accept(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON_UTF8)
         )
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-//                .andExpect(content().json("{\"carList\": []}"));
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("$._embedded").exists())
+                .andExpect(jsonPath("$._embedded.carList").isNotEmpty())
+                .andExpect(jsonPath("$._embedded.carList[*].condition").value("USED"));
 
+        verify(carService, times(1)).list();
     }
 
     /**
@@ -110,10 +113,16 @@ public class CarControllerTest {
      */
     @Test
     public void findCar() throws Exception {
-        /**
-         * TODO: Add a test to check that the `get` method works by calling
-         *   a vehicle by ID. This should utilize the car from `getCar()` below.
-         */
+       this.mvc.perform(get(new URI("/cars/1"))
+               .accept(MediaType.APPLICATION_JSON_UTF8))
+               .andDo(print())
+               .andExpect(status().isOk())
+               .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+               .andExpect(jsonPath("$.id").exists())
+               .andExpect(jsonPath("$.condition").value("USED"));
+
+        verify(carService, times(1)).findById(1L);
+
     }
 
     /**
@@ -122,11 +131,30 @@ public class CarControllerTest {
      */
     @Test
     public void deleteCar() throws Exception {
-        /**
-         * TODO: Add a test to check whether a vehicle is appropriately deleted
-         *   when the `delete` method is called from the Car Controller. This
-         *   should utilize the car from `getCar()` below.
-         */
+        this.mvc.perform(delete(new URI("/cars/1")))
+                .andExpect(status().isNoContent());
+        verify(carService, times(1)).delete(1L);
+    }
+
+    /**
+     * Tests the update of a single car by ID.
+     * @throws Exception if the update fails
+     */
+    @Test
+    public void updateCar() throws Exception {
+        Car car = getCar();
+        car.setCondition(Condition.NEW);
+        given(carService.save(any())).willReturn(car);
+
+        this.mvc.perform(
+                        put(new URI("/cars/1"))
+                                .content(json.write(car).getJson())
+                                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                                .accept(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.condition").value("NEW"));
+
+//        verify(carService, times(1)).save(car);
     }
 
     /**
